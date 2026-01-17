@@ -21,17 +21,15 @@
 
        try{
           const  response = await axios.post("http://localhost:8000/expense/add",object); 
-          console.log("response of post",response.data);
+           console.log(response.data)
           getAllExpenses();
        }catch(error){
-        console.log(error);
+        console.log(error.message);
        }
  })
 
 
 const getAllExpenses = async ()=>{
-
-
     try{
            const allExpense  = await axios.get("http://localhost:8000/expense/getAll")
            const Data = allExpense.data;
@@ -55,6 +53,7 @@ const getAllExpenses = async ()=>{
 const deleteExpense = async (id)=>{   
    try{
         const deleteval = await axios.delete(`http://localhost:8000/expense/delete/${id}`);
+        console.log(deleteval);
         console.log("delete Expense");
         getAllExpenses();
    }catch(error){

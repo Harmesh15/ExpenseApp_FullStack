@@ -6,10 +6,6 @@ const addExpense = async (req,res)=>{
    try{
         const {amount,category,description} = req.body;
 
-        if(!amount || !category || !description){
-          return res.send(  alert("all fields require"))
-        }
-
     const expense = await Expense.create({
         amount:amount,
         category:category,

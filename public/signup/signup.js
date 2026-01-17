@@ -1,0 +1,22 @@
+const form = document.querySelector("form");
+const username = document.querySelector("#name");
+const email = document.querySelector("#email");
+const password = document.querySelector("#password");
+
+form.addEventListener("submit",async (e)=>{
+    e.preventDefault();
+    try{
+        let object = {
+            name:username.value,
+            email:email.value,
+            password:password.value
+        }
+        
+        const res = await axios.post("http://localhost:8000/user/signup",object);
+        console.log(res.data);
+    }catch(error){
+        console.log(error.res.message);
+    }
+})
+
+

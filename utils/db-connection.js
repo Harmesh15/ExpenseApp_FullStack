@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize");
 
 const sequelize = new Sequelize(
-    'expenseapp',
+   'expense_tracker',
     'root',
     'harmesh15',{
         host:"localhost",
