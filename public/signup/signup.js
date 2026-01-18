@@ -5,6 +5,7 @@ const password = document.querySelector("#password");
 
 form.addEventListener("submit",async (e)=>{
     e.preventDefault();
+    
     try{
         let object = {
             name:username.value,
@@ -20,3 +21,34 @@ form.addEventListener("submit",async (e)=>{
 })
 
 
+// const updateExpense = async (req,res)=>{ 
+//    const token = localStorage.getItem("token"); 
+//      try{
+        
+//       const response = await axios.put(`http://localhost:8000/expense/update/${id}`,{
+//          amount: amount.value,
+//          category: category.value,
+//          description: description.value
+//       },
+//        {
+//             headers: {
+//                authorization: `Bearer ${token}`
+//             }
+//          }
+
+//       );
+      
+//     }catch(error){
+//         console.log(error);
+//     }
+
+// }
+
+
+
+const loginpagebtn = document.querySelector("#loginpagebtn");
+
+loginpagebtn.addEventListener('click',(e)=>{
+    e.preventDefault();
+    window.location.href="../login/login.html";
+})

@@ -1,92 +1,130 @@
- let form = document.querySelector('form');
- let amount = document.querySelector('#inputval');
- let category = document.querySelector('#select');
- let description = document.querySelector('#descinput');
- let button = document.querySelector('button');
- const List = document.getElementById("list");
+// const { response } = require("express");
+
+let form = document.querySelector('form');
+let amount = document.querySelector('#inputval');
+let category = document.querySelector('#select');
+let description = document.querySelector('#descinput');
+let button = document.querySelector('button');
+const List = document.getElementById("list");
 
 
 
 
- form.addEventListener('submit', async function(Event){
-    Event.preventDefault();
+form.addEventListener('submit', async function (event) {
+   event.preventDefault();
 
 
-    let object = {
-        amount:amount.value,
-        category:category.value,
-        description:description.value
+   console.log("hello from add expense funtion")
+   const token = localStorage.getItem("token");
+   console.log(token,"token le liya hai add karne k liye");
 
-    }
+   try {
+      const response = await axios.post("http://localhost:8000/expense/add", {
+         amount: amount.value,
+         category: category.value,
+         description: description.value
+      },
+       {
+            headers: {
+               authorization: `Bearer ${token}`
+            }
+         }
 
-       try{
-          const  response = await axios.post("http://localhost:8000/expense/add",object); 
-           console.log(response.data)
-          getAllExpenses();
-       }catch(error){
-        console.log(error.message);
-       }
- })
+      );
+
+      console.log(response.data)
+      getAllExpenses();
+   } catch (error) {
+      console.log(error);
+   }
+})
 
 
-const getAllExpenses = async ()=>{
-    try{
-           const allExpense  = await axios.get("http://localhost:8000/expense/getAll")
-           const Data = allExpense.data;
+const getAllExpenses = async () => {
+   try {
 
-           List.innerHTML = "";
-       
-            Data.forEach((item)=>{
-                let li = document.createElement('li');
-                li.innerHTML = `
-                   ${item.amount} ${item.category}   ${item.description},
+        const token = localStorage.getItem("token");
+      const allExpense = await axios.get("http://localhost:8000/expense/getAll",
+          {
+            headers: {
+               authorization: `Bearer ${token}`
+            }
+         }
+
+      )
+      const Data = allExpense.data;
+
+      console.log(Data);
+      List.innerHTML = "";
+
+      Data.forEach((item) => {
+         let li = document.createElement('li');
+         li.innerHTML = `
+                   ${item.amount} ${item.category} ${item.description},
                    <button onclick="deleteExpense(${item.id})">DeleteExpense</button>
                    <button onclick="editExpense(${item.id})">editExpense</button>
                 `
-                List.appendChild(li);
-            })
-    }catch(error){
-        console.log(error);
-    }
-}
+         List.appendChild(li);
+      })
+   } catch (error) {
+      console.log(error.message);
+   }
+};
 
-const deleteExpense = async (id)=>{   
-   try{
-        const deleteval = await axios.delete(`http://localhost:8000/expense/delete/${id}`);
-        console.log(deleteval);
-        console.log("delete Expense");
-        getAllExpenses();
-   }catch(error){
-    console.log(error);
+const deleteExpense = async (id) => { 
+   try {
+      const token = localStorage.getItem("token");
+      const deleteval = await axios.delete(`http://localhost:8000/expense/delete/${id}`, 
+         {
+            headers: {
+               authorization: `Bearer ${token}`
+            }
+         }
+      );
+      console.log(deleteval);
+      console.log("delete Expense");
+      getAllExpenses();
+   } catch (error) {
+      console.log(error);
    }
 }
 
+window.addEventListener("load-Dom-data", getAllExpenses());
 
 
+// const updateExpense = async (req,res)=>{ 
+//    const token = localStorage.getItem("token"); 
+//      try{
+        
+//       const response = await axios.put(`http://localhost:8000/expense/update/${id}`,{
+//          amount: amount.value,
+//          category: category.value,
+//          description: description.value
+//       },
+//        {
+//             headers: {
+//                authorization: `Bearer ${token}`
+//             }
+//          }
 
- window.addEventListener("load-Dom-data", getAllExpenses());
+//       );
+      
+//     }catch(error){
+//         console.log(error);
+//     }
 
+// }
 
-     
-
-
-
-
-
-
-
-
-
-    // localStorage.setItem("data",JSON.stringify(object)); 
-    // let list = document.createElement('li');
-    // list.textContent = inputval + "  " + categoryval + "  " + descval ;
-    // let deleteBtn = document.createElement('button');
-    // deleteBtn.textContent = "Delete";
-    // list.appendChild(deleteBtn);
-    // let editbtn = document.createElement('button');
-    // editbtn.textContent = "Edit";
-    // list.appendChild(editbtn);
-    // let ulList = document.querySelector('.ul-list');
-    // ulList.append(list);
-    // console.log(ulList);
+// localStorage.setItem("data",JSON.stringify(object));
+// let list = document.createElement('li');
+// list.textContent = inputval + "  " + categoryval + "  " + descval ;
+// let deleteBtn = document.createElement('button');
+// deleteBtn.textContent = "Delete";
+// list.appendChild(deleteBtn);
+// let editbtn = document.createElement('button');
+// editbtn.textContent = "Edit";
+// list.appendChild(editbtn);
+// let ulList = document.querySelector('.ul-list');
+// ulList.append(list);
+// console.log(ulList);
 
