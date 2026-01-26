@@ -13,7 +13,7 @@ const authorizationToken = async (req,res,next)=>{
             res.status(403).json({message:"Invalid or Expired token"});
          }
          // harmesh15 = process.env.JWT_SECRET; 
-        
+        console.log("middle do his work");
         req.user = user;
         next();
    });

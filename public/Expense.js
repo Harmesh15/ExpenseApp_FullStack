@@ -20,6 +20,7 @@ form.addEventListener('submit', async function (event) {
    try {
       const response = await axios.post("http://localhost:8000/expense/add", {
          amount: amount.value,
+         category:category.value,
          description: description.value
       },
        {
@@ -29,9 +30,10 @@ form.addEventListener('submit', async function (event) {
          }
       );
       console.log("user added")
+      form.reset();
       getAllExpenses();
    } catch (error) {
-      console.log("Not Authorize to delete other's expenses")
+      console.log("user not added")
       console.log(error);
    }
 })
@@ -83,6 +85,8 @@ const deleteExpense = async (id) => {
       console.log("delete Expense");
       getAllExpenses();
    } catch (error) {
+      alert("Something went wrong")
+      console.log("Not Authorize to delete other's expenses")
       console.log(error);
    }
 }

@@ -2,48 +2,59 @@ const GeminiApi = require("@google/genai");
 require("dotenv").config();
 const Expense = require("../models/expenseModel");
 const users = require("../models/userModel");
-const sequelize = require("sequelize");
+const sequelize = require("../utils/db-connection");
+
+// transaction
 
 const addExpense = async (req, res) => {
-    console.log("addexpense hit");
-    console.log("user id ", req.user.userId);
+    let t = await sequelize.transaction();
+    try {
 
-     try {
+        console.log("addexpense hit");
 
-     const { amount, description } = req.body;
-    
-       const ai = new GeminiApi.GoogleGenAI({apiKey:process.env.GEMINI_API_KEY});
-    
-       const response = await ai.models.generateContent({
-          "model" : "gemini-3-flash-preview",
-          "contents":`one word category for this expense ${description}`
-       })
-      
-    const categoryval = response.text;
+        const { amount, category, description } = req.body;
+
+        // AI Integration
+        // const ai = new GeminiApi.GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+        // const response = await ai.models.generateContent({
+        //     "model": "gemini-3-flash-preview",
+        //     "contents": `one category for this expense = " ${description}"`
+        // })
+        // const categoryval = response.text;
 
         const expense = await Expense.create({
-            amount: amount,
-            category: categoryval,
-            description: description,
-            userId: req.user.userId
-        })
 
-         const user = await users.findOne({
+            amount: amount,
+            category: category,
+            description: description,
+            userId: req.user.userId,
+
+        },
+            { transaction: t }
+        );
+
+        const user = await users.findOne({
             where: { id: req.user.userId },
             attributes: ['totalExpense']
+            , transaction: t
         });
-       
-    
+
         const totalExpense = Number(user.totalExpense);
         const amountval = Number(req.body.amount);
 
-        const updatetExpense = (totalExpense + amountval);  
+        await users.update(
+            { totalExpense: totalExpense + amountval },
+            {
+                where: { id: req.user.userId },
+                transaction: t
+            })
 
-        await users.update({totalExpense:updatetExpense},{where:{id:req.user.userId}})
-
-
+        await t.commit();
         res.status(201).json(expense);
+
     } catch (error) {
+        if (t) await t.rollback();
         console.log(error)
         res.status(500).send(error)
     }
@@ -63,17 +74,30 @@ const getExpense = async (req, res) => {
 }
 
 
-
-
 const deleteExpense = async (req, res) => {
     console.log("hii from delete controller")
+    let t = await sequelize.transaction();
     try {
         const expenseId = req.params.id;
+        const userId = req.user.userId;
+
+        const dicreaseExpAmount = await Expense.findOne(
+            { attributes: ['amount'], where: { id: expenseId },transaction: t });
+
+        await users.increment(
+            { totalExpense: -dicreaseExpAmount.amount },
+            {
+                where: { id: userId },
+                transaction: t
+            });
+            // throw new Error("force rollback");
+
         const deleteExpense = await Expense.destroy({
             where: {
                 id: expenseId,
                 userId: req.user.userId
             }
+            , transaction: t
         })
 
         if (!deleteExpense) {
@@ -82,27 +106,55 @@ const deleteExpense = async (req, res) => {
             });
         }
 
+        await t.commit();
         res.status(200).json({ message: "Expense delete successfully" });
-
     } catch (error) {
+        if (t) await t.rollback();
         res.status(500).json({ error: error.message })
     }
 }
 
 
-const updateExpense = async (req, res) => {
-
-    const updateId = req.params.id;
-    const { amount, category, description } = req.body;
-
+const updateTotalExpenseAmount = async (req, res, id) => {
     try {
+        const expesneId = id;
 
-        const updateVal = Expense.findOne({
+        const response = await Expense.findOne({
+            attributes: ["amount"],
+            where: { id: expesneId }
+        });
+        console.log(response, "response from update delete amount response")
+
+        const totalExpenseAmount = await users.findOne({
+            attributes: ["totalExpense"],
+            where: { id: req.user.userId }
+        });
+        console.log(totalExpenseAmount, "totalExpense value controller")
+
+        console.log("Expense Value Updated");
+
+    } catch (err) {
+        console.log(err, "Update value totalExpense");
+
+    }
+}
+
+
+const updateExpense = async (req, res) => {
+    let t = await sequelize.transaction();
+    try {
+        const updateId = req.params.id;
+        const { amount, category, description } = req.body;
+
+        const updateVal = await Expense.findOne({
             where: {
                 id: updateId,
                 userId: req.user.userId
             }
-        })
+            , transaction: t
+        }
+
+        )
 
         if (!updateVal) {
             return res.status(404).json({
@@ -114,10 +166,12 @@ const updateExpense = async (req, res) => {
         updateVal.category = category ?? updateVal.category;
         updateVal.description = description ?? updateVal.description;
 
-        await updateVal.save();
+        await updateVal.save({ transaction: t });
         res.status(200).json({ message: "update successfully" });
 
+        await t.commit();
     } catch (error) {
+        await t.rollback();
         console.log(error);
         res.status(500).json({ message: "value not updated server error" })
     }
@@ -125,42 +179,54 @@ const updateExpense = async (req, res) => {
 
 
 const premiumUserFuncon = async (req, res) => {
-    console.log("show primum chala controller m")
+    console.log("show primum chala controller m");
+    // let t;
     try {
-        // const response = await Expense.findAll({
-        //     attributes: [
-        //         [sequelize.col("name"), "name"],
-        //         [sequelize.fn("SUM", sequelize.col("Expense.amount")), "total_amount"]
-        //     ],
-        //     include: [
-        //         {
-        //             model: users,
-        //             attributes: []
-        //         }
-        //     ],
-        //     group: [
-        //         "name"
-        //     ],
-        //     order: [
-        //         [sequelize.fn("SUM", sequelize.col("Expense.amount")), "DESC"]
-        //     ],
-        //     raw: true
-        // })
-
-
+        //  t = await sequelize.transaction();
         const response = await users.findAll({
-            attributes:['name','totalExpense'],
-            order:[['totalExpense', "DESC"]],
-            raw:true
+            attributes: ['name', 'totalExpense'],
+            order: [['totalExpense', "DESC"]],
+            raw: true,
+            transaction: t
 
-        })
+        }
+            // , { transaction: t }
+        )
 
-        console.log(response.data);
+        console.log(response);
+        // await t.commit();
         res.status(200).json(response);
-    }    catch (error) {
+    } catch (error) {
+        //    if (t) await t.rollback();
         console.log(error.original);
         res.status(500).json(error.message);
     }
+
+    // const response = await Expense.findAll({
+    //     attributes: [
+    //         [sequelize.col("name"), "name"],
+    //         [sequelize.fn("SUM", sequelize.col("Expense.amount")), "total_amount"]
+    //     ],
+    //     include: [
+    //         {
+    //             model: users,
+    //             attributes: []
+    //         }
+    //     ],
+    //     group: [
+    //         "name"
+    //     ],
+    //     order: [
+    //         [sequelize.fn("SUM", sequelize.col("Expense.amount")), "DESC"]
+    //     ],
+    //     raw: true
+    // })
+
+
+
+
+
+
     // try {
     //     const response = await Expense.findAll({
 
