@@ -7,7 +7,7 @@ form.addEventListener("submit", async (e) => {
     try {
         let token = localStorage.getItem("token");
         console.log("send request");
-        const response = await axios.post("http://localhost:8000/called/password/forgotpassword ", {
+        const response = await axios.post("http://localhost:8000/password/forgotpassword ", {
             email: input.value
         },
             {

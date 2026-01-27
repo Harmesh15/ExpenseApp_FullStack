@@ -1,5 +1,4 @@
 const GeminiApi = require("@google/genai");
-require("dotenv").config();
 const Expense = require("../models/expenseModel");
 const users = require("../models/userModel");
 const sequelize = require("../utils/db-connection");

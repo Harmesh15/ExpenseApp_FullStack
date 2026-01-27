@@ -36,6 +36,20 @@ signbtn.addEventListener('click', (e) => {
 
 })
 
-fpassbtn.addEventListener("click",()=>{
-   window.location.href="../forgot/forgot.html";
+
+
+// forgot Password Api
+
+fpassbtn.addEventListener("click", async () => {
+    console.log("Click on Forgate button")
+    try {
+        const response = await axios.post("http://localhost:8000/password/sendmail",{
+            email:email.value
+        }
+    );
+        console.log(response);
+    } catch (error) {
+        console.log(error);
+    }
+    //    window.location.href="../forgot/forgot.html";
 })

@@ -3,6 +3,8 @@ const route = express.Router();
 const forgotController = require("../controller/forgotController");
 
 console.log("hit route");
-route.post("/password/forgotpassword",forgotController.generateforgotpasswd);
+
+route.post("/sendmail",forgotController.sendmailTouser);
+route.post("/savepassword", forgotController.saveNewpassword);
 
 module.exports = route;
