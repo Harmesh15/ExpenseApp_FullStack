@@ -3,6 +3,7 @@ const Expense = require("../models/expenseModel");
 const users = require("../models/userModel");
 const sequelize = require("../utils/db-connection");
 
+
 // transaction
 
 const addExpense = async (req, res) => {
@@ -200,8 +201,53 @@ const premiumUserFuncon = async (req, res) => {
         console.log(error.original);
         res.status(500).json(error.message);
     }
+}
 
-    // const response = await Expense.findAll({
+
+
+// report 
+
+const getAllExpenseForReport = async (req,res)=>{
+    try{
+       console.log("getallexpensereport controller hit");
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const offset = (page-1)*limit;
+
+       const totalexpenses = await Expense.count({where:{userId:req.user.userId}});  
+       const expenses = await Expense.findAll({where:{userId:req.user.userId}, limit:limit,offset:offset,order:[['createdAt',"DESC"]]})
+
+       const totalpage = Math.ceil(totalexpenses/limit);
+
+       res.status(200).json({
+          expenses,
+           pagination:{
+            currentpage:page,
+            totalpage:totalpage,
+            hasnextpage:page<totalpage,
+            haspreviouspage:page>1,
+            nextpage:page<totalpage ? page+1:null,
+            previouspage:page>1 ? page-1:null
+           }
+       })
+    }catch(error){
+        res.status(500).json({message:"Something weng wrong"})
+    }
+}
+
+
+
+module.exports = {
+    addExpense,
+    deleteExpense,
+    getExpense,
+    updateExpense,
+    premiumUserFuncon,
+    getAllExpenseForReport
+}
+
+
+// const response = await Expense.findAll({
     //     attributes: [
     //         [sequelize.col("name"), "name"],
     //         [sequelize.fn("SUM", sequelize.col("Expense.amount")), "total_amount"]
@@ -246,15 +292,3 @@ const premiumUserFuncon = async (req, res) => {
 
     //     res.status(200).json({response});
     //     }
-
-}
-
-
-
-module.exports = {
-    addExpense,
-    deleteExpense,
-    getExpense,
-    updateExpense,
-    premiumUserFuncon
-}

@@ -7,6 +7,7 @@ const List = document.getElementById("list");
 const showpremuiumbutton = document.querySelector(".showpremuiumbutton");
 const buypremiumbtn = document.querySelector(".buyMembership");
 const ListPremium = document.querySelector("#premiumUSerList");
+const showExpense = document.querySelector("#showExpense")
 
 
 
@@ -92,12 +93,17 @@ const deleteExpense = async (id) => {
    }
 }
 
-
-
 // buy premium button
 buypremiumbtn.addEventListener("click",()=>{
    window.location.href="../views/index.html";
 })
+
+
+
+showExpense.addEventListener('click',()=>{
+   console.log("clicked on showExpensebtn")
+   window.location.href="../public/report/report.html";
+});
 
 
 showpremuiumbutton.addEventListener("click" , async ()=>{ 
